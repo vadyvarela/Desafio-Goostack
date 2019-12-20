@@ -6,8 +6,8 @@ Front-end React.js - GoStack Bootcamp <a href="https://rocketseat.com.br" target
 </h3>
 
 <p align = "center">
-<img alt = "Última confirmação do Github" src="https://img.shields.io/github/last-commit/vadyvarela/gympoint-web">
-<img alt = "Idioma principal do GitHub" src="https://img.shields.io/github/languages/top/vadyvarela/gympoint-web">
+<img alt = "Última confirmação do Github" src="https://img.shields.io/github/last-commit/vadyvarela/Desafio-Goostack/backend">
+<img alt = "Idioma principal do GitHub" src="https://img.shields.io/github/languages/top/vadyvarela/Desafio-Goostack/backend">
 <img alt = "GitHub" src = "https://img.shields.io/github/license/vadyvarela/gympoint-frontend.svg">
 </p>
 
