@@ -5,14 +5,13 @@ import {
   addMonths,
   startOfHour,
   startOfDay,
-  isBefore,
   isAfter,
   endOfDay,
   subDays,
   addDays,
   isWithinInterval,
   startOfMinute,
-  endOfMinute
+  endOfMinute,
 } from 'date-fns';
 import { Op } from 'sequelize';
 import Registration from '../models/Registration';
@@ -98,7 +97,7 @@ class RegistrationController {
   }
 
   async store(req, res) {
-	const schema = Yup.object().shape({
+    const schema = Yup.object().shape({
       student_id: Yup.number().required(),
       plan_id: Yup.number().required(),
       date: Yup.date().required(),
@@ -125,8 +124,8 @@ class RegistrationController {
     if (!plan) {
       return res.status(401).json({ error: 'Plan not found' });
     }
-	
-	const registrationExists = await Registration.findOne({
+
+    const registrationExists = await Registration.findOne({
       where: { student_id: req.body.student_id },
     });
 
@@ -184,8 +183,8 @@ class RegistrationController {
       end_date,
       price,
     });
-	
-	await Queue.add(RegistrationMail.key, {
+
+    await Queue.add(RegistrationMail.key, {
       registration,
       student,
       plan,

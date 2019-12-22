@@ -71,9 +71,9 @@ class HelpOrdersController {
 
     await helpOrder.save();
 
-    /*await Queue.add(HelpOrderMail.key, {
+    await Queue.add(HelpOrdersMail.key, {
       helpOrder,
-    });*/
+    });
 
     return res.json(helpOrder);
   }
