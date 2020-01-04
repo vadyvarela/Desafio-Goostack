@@ -1,5 +1,4 @@
-import * as Yup from 'yup';
-import { startOfDay, endOfDay, startOfWeek, endOfWeek } from 'date-fns';
+import { subDays, startOfDay, endOfDay } from 'date-fns';
 import { Op } from 'sequelize';
 // import pt from 'date-fns/locale/pt';
 import Checkins from '../models/Checkins';
@@ -7,101 +6,86 @@ import Students from '../models/Students';
 
 class CheckinsController {
   async index(req, res) {
-    const page = parseInt(req.query.page || 1, 10);
-    const perPage = parseInt(req.query.perPage || 5, 10);
-    const student_id = req.params.id;
-
-    const studentExists = await Students.findByPk(student_id);
+    const studentExists = await Students.findByPk(req.params.id);
 
     if (!studentExists) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(400).json({ error: 'Students not found.' });
     }
 
-    const checkins = await Checkins.findAndCountAll({
-      where: {
-        student_id,
-      },
-      include: [
-        {
-          model: Students,
-          as: 'students',
-          attributes: ['id', 'name'],
-        },
-      ],
-    });
+    const { page } = req.query;
 
-    if (!checkins) {
-      res.status(404).json({
-        error: 'This user has not yet checked in!',
-      });
+    let pageLimit = {};
+    if (page) {
+      pageLimit = {
+        offset: (page - 1) * 20,
+        limit: 20,
+      };
     }
 
-    const totalPage = Math.ceil(checkins.count / perPage);
-
-    return res.json({
-      page,
-      perPage,
-      mydata: checkins.rows,
-      total: checkins.count,
-      totalPage,
+    const checkins = await Checkins.findAll({
+      where: { student_id: studentExists.id },
+      attributes: ['id', 'created_at'],
+      ...pageLimit,
+      order: [['created_at', 'DESC']],
     });
+
+    return res.json(checkins);
   }
 
   async store(req, res) {
-    const schema = Yup.object().shape({
-      student_id: Yup.number()
-        .positive()
-        .required(),
-    });
-    const student_id = req.params.id;
-
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation fails' });
-    }
-
-    const studentExists = await Students.findByPk(student_id);
+    const studentExists = await Students.findByPk(req.params.id);
 
     if (!studentExists) {
-      return res.status(400).json({ error: 'This student does not exist.' });
+      return res.status(400).json({ error: 'Students not found.' });
     }
-
-    const checkinDate = new Date();
-
-    const checkin = await Checkins.findOne({
+	
+	const checkinDate = new Date();
+    const todatCheckin = await Checkins.findOne({
       where: {
-        student_id,
+        student_id: studentExists.id,
         created_at: {
           [Op.between]: [startOfDay(checkinDate), endOfDay(checkinDate)],
         },
       },
     });
 
-    if (checkin) {
+    if (todatCheckin) {
       return res.json({ message: 'Student already checked in today' });
     }
 
-    const checkinsCount = await Checkins.count({
+    const sevenDaysAgo = subDays(checkinDate, 7);
+
+    const weekCheckins = await Checkins.findAll({
       where: {
-        student_id,
+        student_id: studentExists.id,
         created_at: {
-          [Op.between]: [startOfWeek(checkinDate), endOfWeek(checkinDate)],
+          [Op.between]: [sevenDaysAgo, checkinDate],
         },
       },
     });
 
-    if (checkinsCount === 5) {
+    if (weekCheckins.length >= 5) {
       return res
-        .status(403)
-        .json({ error: 'Student can only checkin 5 times per week' });
+        .status(400)
+        .json({ error: 'Limite de 5 checkins por semana atingido.' });
     }
 
-    await Checkins.create({
-      student_id,
+    const checkin = await Checkins.create({
+      student_id: studentExists.id,
     });
 
-    return res.status(200).json({
-      message: 'Your checkins is accepted',
+    const studentCheckin = await Checkins.findByPk(checkin.id, {
+      attributes: ['id', 'created_at'],
+      include: [
+        {
+          model: Students,
+          as: 'students',
+          attributes: ['name', 'email'],
+        },
+      ],
     });
+
+    return res.json(studentCheckin);
   }
 }
 

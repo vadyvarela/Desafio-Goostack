@@ -25,6 +25,9 @@ class StudentHelpOrderController {
 
     const helpOrders = await HelpOrder.findAll({
       where: { student_id: id },
+	  order: [
+		['id', 'DESC'],
+	  ],
       ...pageLimit,
     });
 
