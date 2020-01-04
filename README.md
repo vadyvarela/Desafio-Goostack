@@ -13,14 +13,14 @@ GymPoint - GoStack Bootcamp <a href="https://rocketseat.com.br" target="__blank"
 # Gympoint
 Gym management system
 
-## Funcionalidades admin
+## functionality admin
 Project funcionality:
 * User Authentication
 * Student Registration
 * Plan management
 * Enrollment Management
 
-## Funcionalidade estudante
+## functionality students
 * Student Checkins
 * Requests for assistance
 	
